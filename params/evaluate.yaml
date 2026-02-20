@@ -1,5 +1,9 @@
 params:
-  metrics:
-      - accuracy
-      - f1
-      - roc_auc
+  metrics_with_threshold:
+    # - accuracy_score
+    # - precision_score
+    - recall_score
+    - f1_score
+  metrics_without_threshold:
+    - roc_auc_score
+    - average_precision_score

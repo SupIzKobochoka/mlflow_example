@@ -1,12 +1,18 @@
 import pandas as pd
 from joblib import dump
-from sklearn.linear_model import LogisticRegression
-
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+import mlflow
 from constants import DATASET_PATH_PATTERN, MODEL_FILEPATH, RANDOM_STATE
 from utils import get_logger, load_params
 
 STAGE_NAME = 'train'
 
+MODELS = {model.__name__: model for model in [LogisticRegression, 
+                                              RandomForestClassifier, 
+                                              LogisticRegressionCV, 
+                                              DecisionTreeClassifier]}
 
 def train():
     logger = get_logger(logger_name=STAGE_NAME)
@@ -20,9 +26,9 @@ def train():
     logger.info('Успешно считали датасеты!')
 
     logger.info('Создаём модель')
-    params['random_state'] = RANDOM_STATE
+    params['model_args']['random_state'] = RANDOM_STATE
     logger.info(f'    Параметры модели: {params}')
-    model = LogisticRegression(**params)
+    model = MODELS[params['model']](**params['model_args'])
 
     logger.info('Обучаем модель')
     model.fit(X_train, y_train)
@@ -31,6 +37,11 @@ def train():
     dump(model, MODEL_FILEPATH)
     logger.info('Успешно!')
 
+    mlflow.log_params({"model_name": params["model"],
+                       "random_state": RANDOM_STATE,
+                       **params["model_args"]})
+
+    mlflow.sklearn.log_model(model, "model")
 
 if __name__ == '__main__':
     train()

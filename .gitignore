@@ -3,3 +3,5 @@ data/
 .ipynb_checkpoints
 __pycache__
 model.joblib
+**/mlruns
+**/__*__
